@@ -253,7 +253,7 @@ def evaluate_agent(agent, environment, num_games=10000):
 
 # Test the Q-learning agent with your environment
 if __name__ == "__main__":
-    from fix_env import BlackjackEnvironment
+    from fix_env import BlackjackEnvironment, HIT
     
     # Test that the agent works with your environment
     env = BlackjackEnvironment()
@@ -266,5 +266,5 @@ if __name__ == "__main__":
     test_state, _ = env.reset()
     test_state_info = env.get_state_info(test_state)
     action = agent.choose_action(test_state_info)
-    print(f"Test action: {'HIT' if action == 1 else 'STAND'}")
+    print(f"Test action: {'HIT' if action == HIT else 'STAND'}")
     print(f"Test state: Player={test_state_info['player_value']}, Dealer={test_state_info['dealer_showing']}")

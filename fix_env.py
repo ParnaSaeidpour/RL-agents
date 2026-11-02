@@ -6,6 +6,10 @@ Pure game environment without any RL algorithms
 import rlcard
 import numpy as np
 
+# RLCard blackjack action ids (env.actions == ['hit', 'stand'])
+HIT = 0
+STAND = 1
+
 class BlackjackEnvironment:
     def __init__(self):
         self.env = rlcard.make('blackjack')
@@ -32,6 +36,14 @@ class BlackjackEnvironment:
         """Get current player ID"""
         return self.env.get_player_id()
     
+    def final_scores(self):
+        """Player and dealer hand values at the end of a game (dealer's hidden card included)"""
+        from mc import calculate_hand_value_and_ace
+        game = self.env.game
+        player = calculate_hand_value_and_ace([c.get_index() for c in game.players[0].hand])[0]
+        dealer = calculate_hand_value_and_ace([c.get_index() for c in game.dealer.hand])[0]
+        return player, dealer
+
     def get_state_info(self, state):
         """Extract useful information from state"""
         obs = state['obs']

@@ -9,7 +9,7 @@ import json
 import pandas as pd
 from collections import defaultdict
 from q_learning import QLearningAgent, train_q_learning_with_env, evaluate_agent
-from fix_env import BlackjackEnvironment
+from fix_env import BlackjackEnvironment, HIT
 
 # ==================== CONFIGURATION PARAMETERS ====================
 ANALYSIS_CONFIG = {
@@ -53,7 +53,7 @@ def run_detailed_evaluation(agent, env, num_games=1000):
             if current_player == 0:  # Agent's turn
                 state_info = env.get_state_info(state)
                 action = agent.choose_action(state_info)
-                player_actions.append("HIT" if action == 1 else "STAND")
+                player_actions.append("HIT" if action == HIT else "STAND")
                 next_state, next_player_id = env.step(action)
             else:  # Dealer's turn
                 action = 0  
@@ -66,14 +66,7 @@ def run_detailed_evaluation(agent, env, num_games=1000):
         reward = payoffs[0]  
         
         # Try to get final scores from the environment
-        player_score = 0
-        dealer_score = 0
-        
-        # Try different methods to get scores
-        if hasattr(env, 'player_hand') and env.player_hand:
-            player_score = env.player_hand.get_value()
-        if hasattr(env, 'dealer_hand') and env.dealer_hand:
-            dealer_score = env.dealer_hand.get_value()
+        player_score, dealer_score = env.final_scores()
         
         # Determine winner and outcome
         if reward > 0:
@@ -161,10 +154,10 @@ def create_additional_plots(agent, history, game_results, outcome_stats, folder=
         for state, q_values in agent.q_table.items():
             if isinstance(q_values, (list, np.ndarray)) and len(q_values) >= 2:
                 best_action = np.argmax(q_values)
-                if best_action == 0:
-                    stand_count += 1
-                else:
+                if best_action == HIT:
                     hit_count += 1
+                else:
+                    stand_count += 1
         
         actions = ['STAND', 'HIT']
         counts = [stand_count, hit_count]
@@ -195,7 +188,7 @@ def create_additional_plots(agent, history, game_results, outcome_stats, folder=
         axes[1, 1].plot(episodes, win_rates, 'b-', alpha=0.5, label='Window Win Rate')
         axes[1, 1].plot(episodes, cumulative_avg, 'r-', linewidth=2, label='Cumulative Average')
         axes[1, 1].axhline(y=0.42, color='g', linestyle='--', alpha=0.7, label='Optimal (42%)')
-        axes[1, 1].axhline(y=0.38, color='orange', linestyle='--', alpha=0.7, label='Random (38%)')
+        axes[1, 1].axhline(y=0.38, color='orange', linestyle='--', alpha=0.7, label='Always stand (38%)')
         
         # Add final evaluation result if available
         if game_results and outcome_stats:
